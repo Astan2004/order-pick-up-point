@@ -1,0 +1,80 @@
+create table worker_category
+(
+workerCatId int not null primary key identity (1,1),
+cat_name varchar(100) 
+)
+
+Create table Tuser
+(
+userPhone char(10) not null primary key,
+userName varchar(100),
+userSurname varchar(100),
+
+)
+
+create table worker
+( workerPhone char(10) primary key,
+catId int foreign key references worker_category(workerCatId) not null,
+workerName varchar(100),
+workerSurname varchar(100),
+
+workerLogin varchar(100) unique,
+workerPass varchar(100)
+
+)
+
+
+Create table rack
+(
+rackId int not null primary key identity (1,1),
+rack_desk text
+)
+
+create table size
+(
+sizeID int not null primary key identity (1,1),
+size_name varchar(50)
+)
+
+create table cell
+(
+cellId int not null primary key identity (1,1),
+sizeId int not null foreign key references size(sizeID),
+rackId int not null foreign key references rack(rackId), 
+isBusy bit not null  default 0
+)
+
+
+create table orderState
+(
+stateId  int not null primary key identity (1,1),
+stateName varchar(100)
+)
+
+create table orders
+(
+orderId int not null primary key identity (1,1),
+orderGetdate date DEFAULT current_timestamp,
+orderOutdate date default null,
+orderUserordered char(10) not null foreign key references Tuser(userPhone),
+sizeId int not null foreign key references size(sizeID),
+cellId int not null foreign key references cell(cellId),
+stateId int not null foreign key references orderState(stateId),
+keep_days tinyint default 14 not null,
+)
+
+create table log_category 
+(
+logCat_id  int not null primary key identity (1,1),
+logCatName varchar(100)
+)
+
+create table logs
+(
+logId  int not null primary key identity (1,1),
+logCat_id int not null foreign key references log_category(logCat_id),
+orderId int not null foreign key references orders(orderId),
+logDatetime datetime,
+logWorker char(10) foreign key references worker(workerPhone) not null
+
+)
