@@ -1,0 +1,37 @@
+ PdfPTable pdfTable = new PdfPTable(2);
+ pdfTable.DefaultCell.Padding = 3;
+ pdfTable.WidthPercentage = 30;
+ pdfTable.HorizontalAlignment = Element.ALIGN_LEFT;
+ pdfTable.DefaultCell.BorderWidth = 1;
+
+ //Adding Header row
+ foreach (DataGridViewColumn column in dataGridView1.Columns)
+ {
+     PdfPCell cell = new PdfPCell(new Phrase(column.HeaderText));
+     cell.BackgroundColor = new iTextSharp.text.BaseColor(240, 240, 240);
+     pdfTable.AddCell(cell);
+ }
+
+ //Adding DataRow
+ foreach (DataGridViewRow row in dataGridView1.Rows)
+ {
+     foreach (DataGridViewCell cell in row.Cells)
+     {
+         pdfTable.AddCell(Convert.ToString(cell.Value));
+     }
+ }
+
+ //Exporting to PDF
+
+ using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Pdf file|*.pdf", ValidateNames = true })
+ {
+     if (sfd.ShowDialog() == DialogResult.OK)
+     {
+         iTextSharp.text.Document pdfDoc = new iTextSharp.text.Document(PageSize.A4, 10, 10, 10, 10);
+         PdfWriter.GetInstance(pdfDoc, new FileStream(sfd.FileName, FileMode.Create));\
+         pdfDoc.Open();
+         pdfDoc.Add(pdfTable);
+
+
+     }
+ }
