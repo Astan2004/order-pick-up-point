@@ -1,0 +1,86 @@
+from aiogram import Bot, Dispatcher, types, executor
+from aiogram.dispatcher.filters import Text
+import logging
+import pyodbc as db
+from os import getenv
+from sys import exit
+
+import main
+
+connection = db.connect('Driver={SQL Server};' 'Server=DESKTOP-C27D013\MSSQLSERVERCOMP;'
+                          'Database=PVZ;' 'Trusted_connection=yes;')
+cursor = connection.cursor()
+
+
+bot_token = getenv("BOT_TOKEN")
+if not bot_token:
+    exit("Error: no token provided")
+
+bot = Bot(token=bot_token)
+dp = Dispatcher(bot)
+
+logging.basicConfig(level=logging.INFO)
+
+story = {}
+
+
+@dp.message_handler(commands=['start'])
+async def start(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    buttons = ["Погнали!", "Я не хочу"]
+    keyboard.add(*buttons)
+    await message.reply(f'Добро {message.from_user.first_name}, давай сначала пройдем регистрацию!', reply_markup=keyboard)
+
+@dp.message_handler(Text(equals="Погнали!"))
+async def with_puree(message: types.Message):
+    await message.answer("Отличный выбор!", reply_markup=types.ReplyKeyboardRemove())
+    await message.answer("Напиши мне свой номер без первой цифры(для умных без кода страны)\n"
+                        "(АХТУНГ!!! Бот направлен на российский рынок и не принимает иностранные номера)")
+    story[len(story)] = ["Напиши мне свой номер без первой цифры(для умных без кода страны)\n"
+                        "(АХТУНГ!!! Бот направлен на российский рынок и не принимает иностранные номера)"]
+    print(story)
+
+
+@dp.message_handler(content_types=types.ContentTypes.TEXT)
+async def da(message: types.Message):
+    story[len(story)] = [message.text]
+    if len(message.text) == 10:
+        await message.answer("Фантастика, теперь введи свое НАСТОЯЩЕЕ имя!")
+        story[len(story)] = "Фантастика, теперь введи свое НАСТОЯЩЕЕ имя!"
+        print(story)
+
+    if len(story) > 5:
+        for _ in range((len(story) - 5)):
+            keys = list(story.keys())
+            del story[keys[0]]
+
+
+
+@dp.message_handler(lambda message: message.text == "Я не хочу")
+async def without_puree(message: types.Message):
+    await message.reply("Так не интересно! Прощай(", reply_markup=types.ReplyKeyboardRemove())
+
+@dp.message_handler(commands=['handler'])
+async def start(message: types.Message):
+    await message.reply('@dp.message_handler(commands=["handler"])\n'
+                        '     async def start(message: types.Message):\n'
+                        '    await message.reply(text)')
+
+@dp.message_handler(content_types=[types.ContentType.ANIMATION])
+async def echo_document(message: types.Message):
+    await message.answer_animation(message.animation.file_id)
+    await message.animation.download()
+    await message.answer_animation('')
+
+
+@dp.message_handler(commands=[''])
+async def writedown(message: types.Message):
+    requestString = ''' select Дата_списания from Акт списания where ID_Списания = 1'''
+    dbCursor.execute(requestString)
+    connection.commit()
+    for row in dbCursor:
+        await message.answer(row)
+
+
+if __name__ == "__main__":
+    executor.start_polling(dp, skip_updates=True)
