@@ -1,0 +1,11 @@
+
+create trigger size_chek on orders after insert
+as
+declare @chek_param int
+set @chek_param = ( select sizeId from cell where cellId = (select max(cellId) from cell))
+declare @ord_size int
+set @ord_size = (select sizeId from orders where orderId = (select max(orderId) from orders))
+if @chek_param < @ord_size
+begin
+rollback transaction
+end
