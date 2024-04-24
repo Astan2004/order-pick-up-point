@@ -1,0 +1,11 @@
+db.opencon();
+            var ordergetdate = DateTime.Now.ToString("dd.MM.yyyy");
+            var orderUserordered = orderUserorderedTxt.Text;
+            var sizeld = sizeldNUD.Value.ToString();
+            var cellid = cellidNUD.Value.ToString();
+            var keep_days = keepdaysNUD.Value.ToString();
+
+
+            var addquery = $"insert into orders values ('{ordergetdate}',null,{orderUserordered},{sizeld},{cellid},{1},{keep_days}) ";
+            var command = new SqlCommand(addquery, db.getConn());
+            command.ExecuteNonQuery();
